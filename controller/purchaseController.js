@@ -4,6 +4,11 @@ const createPurchase = async (req, res) => {
   try {
     const purchase = new Purchase(req.body);
     const savedPurchase = await purchase.save();
+
+    const book = await Book.findById(savedPurchase.bookId);
+    book.sellCount += savedPurchase.quantity;
+    await book.save();
+
     res.status(201).json(savedPurchase);
   } catch (error) {
     res.status(400).json({ message: error.message });
