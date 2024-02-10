@@ -1,4 +1,6 @@
 const Purchase = require("../models/Purchase");
+const Book = require("../models/Book");
+const nodemailer = require("nodemailer");
 
 const createPurchase = async (req, res) => {
   try {
@@ -9,9 +11,41 @@ const createPurchase = async (req, res) => {
     book.sellCount += savedPurchase.quantity;
     await book.save();
 
+    await sendPurchaseConfirmationEmail(savedPurchase);
+
     res.status(201).json(savedPurchase);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+const sendPurchaseConfirmationEmail = async (purchase) => {
+  try {
+    var transporter = await nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "sendmailm6@gmail.com",
+        pass: "breu nlyd ztmw ujap",
+      },
+    });
+
+    const mailOptions = {
+      from: "sendmailm6@gmail.com",
+      to: purchase.email,
+      subject: "Purchase Confirmation",
+      html: `<p>Thank you for your purchase!</p>`,
+    };
+
+    await transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+    console.log("Purchase confirmation email sent successfully!");
+  } catch (error) {
+    console.error("Error sending purchase confirmation email:", error);
   }
 };
 const getAllPurchases = async (req, res) => {
